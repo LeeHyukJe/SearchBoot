@@ -1,57 +1,113 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <v-layout 
+    row wrap pt-5 text-xs-center 
+    style="max-width:500px;margin:0 auto;"
+    >
+    <v-btn @click="searchBbs">게시판</v-btn>
+    <v-btn @click="searchApp">전자결재</v-btn>
+    <v-flex xs12>
+          <v-text-field
+            v-model="userId"
+            label="검색어를 입력하세요"
+          ></v-text-field>
+          <v-btn @click="search">검색</v-btn>
+    </v-flex>
+    <v-flex xs12>
+       <div v-if="results">
+             <div v-for="result in results" :key="result">
+               <p>{{result.RealColName}}검색 결과 갯수{{result.eachCount}}</p>
+               <p>{{result.DOCID}}</p>
+               <p v-html="result.FIELD_SUBJECT"></p>
+               <p>{{result.FIELD_OWNER_NAME}}</p>
+               <hr>
+            </div>    
+       </div>
+       <div v-else>
+         검색 결과가 없습니다. 다른 검색어로 검색해 주세요
+       </div>
+    </v-flex>
+</v-layout>
 </template>
 
 <script>
-export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+import axios from 'axios'
+  export default {
+   data(){
+     return{
+       results:[],
+       userId:''
+     }
+   }
+   ,
+    mounted(){
+      axios
+        .get('/searchAll')
+        .then((res)=>{
+          if(res.data.app.length>0 || res.data.bbs.length>0){
+          let resultList=res.data.bbs
+          let concatList=resultList.concat(res.data.app)
+          this.results=concatList
+          console.log(this.results)
+          }
+          else{
+            this.results=null
+          }
+
+        })
+    },
+    methods:{
+      search(){
+        axios
+        .get('/searchAll?query='+this.userId)
+        .then((res)=>{
+          if(res.data.bbs.length>0 || res.data.app.length>0){
+          let appResult = res.data.app
+          let bbsResult = res.data.bbs
+          let totalResult = appResult.concat(bbsResult)
+          this.results=totalResult
+          console.log(res)
+          }
+          else{
+            this.results=null
+          }
+        })
+      },
+      searchBbs(){
+        axios
+        .get('/search/collection?collection=bbs&query='+this.userId)
+        .then((res)=>{
+          if(res.data.length>0){
+          this.results=res.data
+          console.log(this.results)
+          }
+          else{
+            this.results=null
+          }
+        })
+        .catch((err)=>{
+          console.log(err)
+        })
+      },
+      searchApp(){
+        axios
+        .get('/search/collection?collection=app&query='+this.userId)
+        .then((res)=>{
+          if(res.data.length>0){
+          this.results=res.data
+          console.log(this.results)
+          }
+          else{
+            this.results=null
+          }
+        })
+        .catch((err)=>{
+          console.log(err)
+        })
+      }
+    }
   }
-}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+<style>
+
 </style>

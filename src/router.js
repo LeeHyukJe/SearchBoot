@@ -1,25 +1,73 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
+//import About from './views/About.vue'
+import Login from './views/Login.vue'
+import AccessDenied from './views/Access.vue'
 
 Vue.use(Router)
 
+// const UsersDetail = () => {
+//     return import ('./view/UsersDetail.vue')
+// }
+
+
 export default new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
-    }
-  ]
+    mode: 'history',
+    base: process.env.BASE_URL,
+    routes: [{
+            path: '/search',
+            name: 'home',
+            component: Home
+        },
+        {
+            path: '/about',
+            name: 'about',
+            component: () => {
+                import ('./views/About.vue')
+            }
+        },
+        {
+            path: '/users',
+            name: 'users',
+            component: () =>
+                import ('./views/Users.vue'),
+            children: [{
+                    path: ':id',
+                    name: 'users-detail',
+                    component: () =>
+                        import ('./views/UsersDetail.vue')
+                },
+                {
+                    path: ':id/edit',
+                    name: 'users-edit',
+                    component: () =>
+                        import ('./views/UsersEdit.vue')
+                }
+            ]
+        },
+        {
+            path: '/login',
+            name: 'login',
+            component: Login
+        },
+        {
+            path: '/',
+            name: 'search',
+            component: () =>
+                import ('./views/Search.vue')
+        },
+        {
+            path: '/access',
+            name: 'access',
+            component: AccessDenied
+
+        },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: () =>
+                import ('./views/Admin.vue')
+        }
+    ]
 })
